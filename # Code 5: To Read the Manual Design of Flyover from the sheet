@@ -1,0 +1,7 @@
+# Code 5: To Read the Manual Design of Flyover from the sheet
+
+calculation_book = '1I9FnN0FSsJ4ASkGVUrsknT9MAwxJzw5rd5yu8TZATaA'
+calculation_sheet = 'beh'
+calculation_url = f"https://docs.google.com/spreadsheets/d/{calculation_book}/gviz/tq?tqx=out:csv&sheet={calculation_sheet}"
+calculation_url
+calculation_data = pd.read_csv(calculation_url)
