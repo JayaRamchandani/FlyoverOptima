@@ -1,0 +1,16 @@
+# Code 7: Code to display the columns and some sample rows from the beginning and end to get a clearer picture for Minimum & Maximum values
+# Load the uploaded file again to check its structure
+file_path = '/content/Parameters for Flyover.xlsx - minmax.csv'
+data = pd.read_csv(file_path)
+
+
+# Display the columns
+print(data.columns)
+
+
+# Display the first few rows
+print(data.head())
+
+
+# Display the last few rows
+print(data.tail())
