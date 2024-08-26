@@ -1,0 +1,27 @@
+# Code 1: For Reading the Sheet of Independent & Dependent Parameters
+import pandas as pd
+import numpy as np
+
+
+#function definition for reading google sheet with id and sheet name
+def read_google_sheet(sheet_id, sheet_name):
+  url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+  data = pd.read_csv(url)
+  return data
+
+
+def unique(list1):
+
+
+    # initialize a null list
+    unique_list = []
+
+
+    # traverse for all elements
+    for x in list1:
+        # check if exists in unique_list or not
+        if x not in unique_list:
+            unique_list.append(x)
+
+
+    return unique_list
