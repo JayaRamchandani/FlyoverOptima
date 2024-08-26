@@ -1,0 +1,108 @@
+# Code 9: To generate random values for continuous & discrete function & put these values as input in Manual Design of Flyover.
+import numpy as np
+import pandas as pd
+
+
+# Load the CSV file
+file_path = '/content/Manual Design of Flyover - beh.csv'
+data = pd.read_csv(file_path)
+
+
+# Extract relevant columns
+input_data = data[data['Remark'] == 'Input'].copy()
+input_data.reset_index(drop=True, inplace=True)
+
+
+# Define reasonable ranges for generating random values
+mm_range = (0, 20000)
+meters_range = (0, 20)
+
+
+# Objective function: minimize the sum of the values
+def objective_function(values):
+    return np.sum(values)
+
+
+# Generate initial population
+def initialize_population(pop_size, input_data):
+    population = []
+    for _ in range(pop_size):
+        individual = input_data.copy()
+        individual['Value'] = individual.apply(
+            lambda row: np.random.uniform(*mm_range) if row['Unit'] == 'mm' else np.random.uniform(*meters_range),
+            axis=1
+        )
+        population.append(individual)
+    return population
+
+
+# Evaluate population
+def evaluate_population(population):
+    fitness = []
+    for individual in population:
+        fitness.append(objective_function(individual['Value'].values))
+    return fitness
+
+
+# Select the best individuals for crossover
+def select_best_individuals(population, fitness, num_best):
+    best_indices = np.argsort(fitness)[:num_best]
+    best_individuals = [population[idx] for idx in best_indices]
+    return best_individuals
+
+
+# Perform crossover and mutation
+def crossover_and_mutate(best_individuals, input_data, mutation_rate=0.1):
+    new_population = []
+    num_best = len(best_individuals)
+
+    for i in range(len(best_individuals) * 2):
+        parent1 = best_individuals[i % num_best].copy()
+        parent2 = best_individuals[(i + 1) % num_best].copy()
+
+        crossover_point = np.random.randint(0, len(input_data))
+
+        for j in range(crossover_point, len(input_data)):
+            parent1.loc[j, 'Value'] = parent2.loc[j, 'Value']
+
+        if np.random.rand() < mutation_rate:
+            mutate_idx = np.random.randint(0, len(input_data))
+            if parent1.loc[mutate_idx, 'Unit'] == 'mm':
+                parent1.loc[mutate_idx, 'Value'] = np.random.uniform(*mm_range)
+            else:
+                parent1.loc[mutate_idx, 'Value'] = np.random.uniform(*meters_range)
+
+        new_population.append(parent1)
+
+    return new_population
+
+
+# Genetic algorithm parameters
+pop_size = 500
+num_generations = 500
+num_best = 5
+mutation_rate = 0.1
+
+
+# Initialize population
+population = initialize_population(pop_size, input_data)
+
+
+for generation in range(num_generations):
+    # Evaluate population
+    fitness = evaluate_population(population)
+
+    # Select the best individuals
+    best_individuals = select_best_individuals(population, fitness, num_best)
+
+    # Generate new population through crossover and mutation
+    population = crossover_and_mutate(best_individuals, input_data, mutation_rate)
+
+
+# Get the best solution
+fitness = evaluate_population(population)
+best_solution_idx = np.argmin(fitness)
+best_solution = population[best_solution_idx]
+
+
+best_solution
