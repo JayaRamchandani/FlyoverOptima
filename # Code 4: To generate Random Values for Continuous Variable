@@ -1,0 +1,32 @@
+# Code 4: To generate Random Values for Continuous Variable
+min_max_data = read_google_sheet(sheet_id, sheet_name)
+min_max_data_cts = min_max_data[min_max_data['Remark'] == 'Continuous']
+
+
+#calculate the number of the data rows containing continuous values
+numData = len(min_max_data_cts.index)
+
+
+#find the minimum value column
+minValues = min_max_data_cts['Min']
+
+
+#find the maximum value column
+maxValues = min_max_data_cts['Max']
+
+
+#convert to numpy array
+minValues = np.array(minValues.tolist()).reshape(numData, 1)
+maxValues = np.array(maxValues.tolist()).reshape(numData, 1)
+
+
+#find the difference
+diff = (maxValues - minValues)
+
+
+#calculate intermediate random values
+randValues = minValues + diff * np.random.rand(numData, 1)
+
+
+#test print
+randValues.tolist()
