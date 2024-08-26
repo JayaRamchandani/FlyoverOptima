@@ -1,0 +1,11 @@
+# Code 3: Extract the types of design
+#extract the types of design
+list_types = type_data['Type'].tolist()
+
+
+#unique the list
+list_types = unique(list_types)
+
+
+#print the list types
+list_types
