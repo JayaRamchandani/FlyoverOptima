@@ -1,0 +1,159 @@
+# Code 12: Output will display the Best Solution for length along with the cost, stability, and EIA for each individual in the population.
+import random
+import numpy as np
+
+
+# Define the cost function
+def cost(L, H, W):
+    return L * H * W * 100  # Hypothetical cost function for simplicity
+
+
+# Define the EIA function
+def eia(L, H, W):
+    return (L * H * W) / 1000  # Hypothetical EIA function for simplicity
+
+
+# Define the length function
+def length(L, H, W):
+    return L  # Assuming L represents the length of the flyover
+
+
+# Generate initial population
+def generate_population(size, L_range, H_range, W_range):
+    population = []
+    for _ in range(size):
+        L = random.uniform(*L_range)
+        H = random.uniform(*H_range)
+        W = random.uniform(*W_range)
+        population.append((L, H, W))
+    return population
+
+
+# Evaluate fitness of each individual in the population
+def evaluate_population(population):
+    return [(cost(L, H, W), eia(L, H, W), length(L, H, W)) for L, H, W in population]
+
+
+# Non-dominated sorting
+def non_dominated_sorting(population, fitnesses):
+    fronts = [[]]
+    domination_count = [0] * len(population)
+    dominated_solutions = [[] for _ in range(len(population))]
+
+
+    for i in range(len(population)):
+        for j in range(len(population)):
+            if i != j:
+                if (fitnesses[i][0] <= fitnesses[j][0] and fitnesses[i][1] <= fitnesses[j][1]) and (fitnesses[i][0] < fitnesses[j][0] or fitnesses[i][1] < fitnesses[j][1]):
+                    dominated_solutions[i].append(j)
+                elif (fitnesses[j][0] <= fitnesses[i][0] and fitnesses[j][1] <= fitnesses[i][1]) and (fitnesses[j][0] < fitnesses[i][0] or fitnesses[j][1] < fitnesses[i][1]):
+                    domination_count[i] += 1
+        if domination_count[i] == 0:
+            fronts[0].append(i)
+
+
+    current_front = 0
+    while fronts[current_front]:
+        next_front = []
+        for i in fronts[current_front]:
+            for j in dominated_solutions[i]:
+                domination_count[j] -= 1
+                if domination_count[j] == 0:
+                    next_front.append(j)
+        current_front += 1
+        fronts.append(next_front)
+
+
+    return fronts[:-1]
+
+
+# Calculate crowding distance
+def calculate_crowding_distance(front, fitnesses):
+    distance = [0] * len(front)
+    for m in range(3):  # Number of objectives
+        sorted_front = sorted(front, key=lambda x: fitnesses[x][m])
+        distance[0] = distance[-1] = float('inf')
+        for i in range(1, len(front) - 1):
+            distance[i] += (fitnesses[sorted_front[i + 1]][m] - fitnesses[sorted_front[i - 1]][m]) / (max(fitnesses, key=lambda x: x[m])[m] - min(fitnesses, key=lambda x: x[m])[m])
+    return distance
+
+
+# Select parents for the next generation
+def select_parents(population, fronts, fitnesses, num_parents):
+    selected_parents = []
+    for front in fronts:
+        if len(selected_parents) + len(front) > num_parents:
+            distances = calculate_crowding_distance(front, fitnesses)
+            sorted_front = sorted(range(len(front)), key=lambda x: distances[x], reverse=True)
+            selected_parents.extend([front[i] for i in sorted_front[:num_parents - len(selected_parents)]])
+            break
+        selected_parents.extend(front)
+    return [population[i] for i in selected_parents]
+
+
+# Perform crossover between pairs of parents
+def crossover(parents, offspring_size):
+    offspring = []
+    for k in range(offspring_size):
+        parent1 = random.choice(parents)
+        parent2 = random.choice(parents)
+        alpha = random.random()
+        child = (
+            alpha * parent1[0] + (1 - alpha) * parent2[0],
+            alpha * parent1[1] + (1 - alpha) * parent2[1],
+            alpha * parent1[2] + (1 - alpha) * parent2[2]
+        )
+        offspring.append(child)
+    return offspring
+
+
+# Mutate the offspring
+def mutate(offspring, mutation_rate, L_range, H_range, W_range):
+    for i in range(len(offspring)):
+        if random.random() < mutation_rate:
+            L = random.uniform(*L_range)
+            H = random.uniform(*H_range)
+            W = random.uniform(*W_range)
+            offspring[i] = (L, H, W)
+    return offspring
+
+
+# Main genetic algorithm loop
+def genetic_algorithm(pop_size, L_range, H_range, W_range, num_generations, mutation_rate):
+    population = generate_population(pop_size, L_range, H_range, W_range)
+    for generation in range(num_generations):
+        fitnesses = evaluate_population(population)
+        fronts = non_dominated_sorting(population, fitnesses)
+        parents = select_parents(population, fronts, fitnesses, pop_size // 2)
+        offspring = crossover(parents, pop_size - len(parents))
+        offspring = mutate(offspring, mutation_rate, L_range, H_range, W_range)
+        population = parents + offspring
+    return population, evaluate_population(population)
+
+
+# Parameters
+pop_size = 500
+L_range = (100, 500)
+H_range = (50, 200)
+W_range = (20, 100)
+num_generations = 500
+mutation_rate = 0.1
+
+
+# Run the genetic algorithm
+final_population, final_fitnesses = genetic_algorithm(pop_size, L_range, H_range, W_range, num_generations, mutation_rate)
+
+
+# Identify the Pareto front
+fronts = non_dominated_sorting(final_population, final_fitnesses)
+pareto_front = fronts[0]
+
+
+# Select the best solution based on minimum cost
+best_solution_index = min(pareto_front, key=lambda x: final_fitnesses[x][0])
+best_solution = final_population[best_solution_index]
+best_fitness = final_fitnesses[best_solution_index]
+
+
+# Print the best solution and its fitness
+print(f"Best Solution: {best_solution}, Cost: {best_fitness[0]}, EIA: {best_fitness[1]}, Length: {best_fitness[2]}")
