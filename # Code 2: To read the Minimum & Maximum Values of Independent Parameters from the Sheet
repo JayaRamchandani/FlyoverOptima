@@ -1,0 +1,9 @@
+# Code 2: To read the Minimum & Maximum Values of Independent Parameters from the Sheet
+
+sheet_id = "1KptQcTUukaybsPbcUgfP2mqflQkAAqYk"
+sheet_name = "minmax"
+#url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
+
+
+type_data = read_google_sheet(sheet_id, sheet_name)
+type_data[type_data['Type'] == 'Deck design']
