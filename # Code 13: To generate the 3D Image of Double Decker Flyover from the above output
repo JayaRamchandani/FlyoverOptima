@@ -1,0 +1,61 @@
+# Code 13: To generate the 3D Image of Double Decker Flyover from the above output
+import matplotlib.pyplot as plt
+import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
+
+# Best solution values from the Genetic Algorithm output
+best_L = 101.45889805575663 # Example length
+best_C = 11460422.392189419  # Example cost
+best_EIA = 114.60422392189419  # Example EIA
+
+# Function to draw the 3D double-decker flyover
+def draw_double_decker_flyover_3d(length, cost, eia):
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Define the flyover structure
+    x = np.linspace(0, length, 100)
+    y = np.zeros_like(x)
+    z1 = np.ones_like(x) * 5  # Lower deck height
+    z2 = np.ones_like(x) * 10  # Upper deck height
+
+    # Plot the lower flyover deck
+    ax.plot(x, y, z1, color='gray', linewidth=4, label='Lower Deck')
+
+    # Plot the upper flyover deck
+    ax.plot(x, y, z2, color='darkgray', linewidth=4, label='Upper Deck')
+
+    # Plot the supports
+    support_interval = length / 4
+    for i in range(1, 4):
+        support_x = np.array([i * support_interval, i * support_interval])
+        support_y = np.array([0, 0])
+        support_z = np.array([0, 5])
+        ax.plot(support_x, support_y, support_z, color='brown', linewidth=4, label='Support' if i == 1 else "")
+        support_z2 = np.array([0, 10])
+        ax.plot(support_x, support_y, support_z2, color='brown', linewidth=4, label='Support' if i == 1 else "")
+
+    # Add text annotations
+    ax.text(length / 2, -5, 12, f'Length: {length} meters', fontsize=12, ha='center')
+    ax.text(length / 2, -5, 10, f'Cost: ${cost}', fontsize=12, ha='center')
+    ax.text(length / 2, -5, 8, f'EIA Score: {eia}', fontsize=12, ha='center')
+
+    # Set labels and title
+    ax.set_xlabel('Length (meters)')
+    ax.set_ylabel('Width (meters)')
+    ax.set_zlabel('Height (meters)')
+    ax.set_title('3D Double-Decker Flyover Design')
+
+    # Set limits
+    ax.set_xlim(0, length)
+    ax.set_ylim(-10, 10)
+    ax.set_zlim(0, 15)
+
+    # Show the legend
+    ax.legend()
+
+    # Show the plot
+    plt.show()
+
+# Draw the double-decker flyover with the best solution
+draw_double_decker_flyover_3d(best_L, best_C, best_EIA)
